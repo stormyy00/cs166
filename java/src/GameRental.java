@@ -354,6 +354,26 @@ public class GameRental {
     * Creates a new user
     **/
    public static void CreateUser(GameRental esql){
+      try{
+         System.out.println("\tEnter name: ");
+         String name = in.readLine();
+         System.out.println("\tEnter password: ");
+         String pwd = in.readLine();
+         System.out.println("\tEnter role: ");
+         String role = in.readLine();
+         System.out.println("\tEnter favorite game: ");
+         String favGames = in.readLine();
+         System.out.println("\tEnter phone number ");
+         String num = in.readLine();
+
+         String query = String.format("INSERT INTO Users (login, password, role, favGames, phoneNum, numOverDueGames) VALUES ('%s', '%s', '%s', '%s', '%s', 0)", name, pwd, role, favGames, num);
+
+         esql.executeUpdate(query);
+         System.out.println("User successfully created!");
+
+      }catch (Exception e){
+         System.err.println (e.getMessage ());
+      }
    }//end CreateUser
 
 
@@ -362,22 +382,135 @@ public class GameRental {
     * @return User login or null is the user does not exist
     **/
    public static String LogIn(GameRental esql){
-      return null;
+      try{
+         System.out.println("\tEnter name: ");
+         String login = in.readLine();
+         System.out.println("\tEnter password: ");
+         String pwd = in.readLine(); 
+
+         String query = String.format("SELECT login FROM USERS WHERE login = '%s' AND password = '%s'", login, pwd);
+         List<List<String>> userID = esql.executeQueryAndReturnResult(query);
+	         if (userID.size() > 0)
+		         return userID.get(0).get(0);
+            return null;
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return null;
+      }
    }//end
 
 // Rest of the functions definition go in here
 
-   public static void viewProfile(GameRental esql) {}
-   public static void updateProfile(GameRental esql) {}
-   public static void viewCatalog(GameRental esql) {}
-   public static void placeOrder(GameRental esql) {}
-   public static void viewAllOrders(GameRental esql) {}
-   public static void viewRecentOrders(GameRental esql) {}
-   public static void viewOrderInfo(GameRental esql) {}
-   public static void viewTrackingInfo(GameRental esql) {}
-   public static void updateTrackingInfo(GameRental esql) {}
-   public static void updateCatalog(GameRental esql) {}
-   public static void updateUser(GameRental esql) {}
+   public static void viewProfile(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This views profile");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void updateProfile(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This update profile");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void viewCatalog(GameRental esql) {  
+      try{
+       String query = "";
+         System.out.println("This views catalog");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void placeOrder(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This places order");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void viewAllOrders(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This views all orders");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void viewRecentOrders(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This views recent orderse");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void viewOrderInfo(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This views order info");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void viewTrackingInfo(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This views trakcing info");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void updateTrackingInfo(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This updates tracking info");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void updateCatalog(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This updates catalog");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
+   public static void updateUser(GameRental esql) {
+      try{
+       String query = "";
+         System.out.println("This updates user");
+
+       
+      }catch(Exception e){
+         System.err.println (e.getMessage());
+      }
+   }
 
 
 }//end GameRental
