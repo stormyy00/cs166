@@ -287,7 +287,7 @@ public class GameRental {
                 System.out.println(".........................");
                 System.out.println("20. Log out");
                 switch (readChoice()){
-                   case 1: viewProfile(esql); break;
+                   case 1: viewProfile(esql, authorisedUser); break;
                    case 2: updateProfile(esql); break;
                    case 3: viewCatalog(esql); break;
                    case 4: placeOrder(esql); break;
@@ -401,12 +401,28 @@ public class GameRental {
 
 // Rest of the functions definition go in here
 
-   public static void viewProfile(GameRental esql) {
+   public static void viewProfile(GameRental esql, String authorisedUser) {
       try{
-       String query = "";
          System.out.println("This views profile");
+         String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
+         List<List<String>> profile = esql.executeQueryAndReturnResult(query);
 
-       
+         if(!profile.isEmpty()){
+            System.out.println("===========================");
+            System.out.println("\tUser Profile");
+            System.out.println("===========================");
+            for (List<String> row : profile) {
+               System.out.println("Name: " + row.get(0));
+               System.out.println("password:" + row.get(1));
+               System.out.println("role:" + row.get(2));
+               System.out.println("favoite games:" + row.get(3));
+               System.out.println("Phone Number:" + row.get(4));
+               System.out.println("Overdue Games:" + row.get(5));
+            }
+
+         }else{
+            System.out.println("No user found with the login: " + authorisedUser);
+         }
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
