@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.Math;
+import java.sql.PreparedStatement;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -288,7 +289,7 @@ public class GameRental {
                 System.out.println("20. Log out");
                 switch (readChoice()){
                    case 1: viewProfile(esql, authorisedUser); break;
-                   case 2: updateProfile(esql); break;
+                   case 2: authorisedUser = updateProfile(esql, authorisedUser); break;
                    case 3: viewCatalog(esql); break;
                    case 4: placeOrder(esql); break;
                    case 5: viewAllOrders(esql); break;
@@ -467,16 +468,72 @@ public class GameRental {
             System.err.println(e.getMessage());
         }
    }
-   public static void updateProfile(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This update profile");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+   public static String updateProfile(GameRental esql, String authorisedUser) {
+    try {
+        System.out.println("This updates profile");
+
+        
+        String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
+        PreparedStatement checkUserStmt = esql.connection.prepareStatement(checkUserQuery);
+        checkUserStmt.setString(1, authorisedUser);
+        ResultSet rs = checkUserStmt.executeQuery();
+        rs.next();
+        int userCount = rs.getInt(1);
+        checkUserStmt.close();
+
+        if (userCount == 0) {
+            System.out.println("No user found with the login: " + authorisedUser);
+            return authorisedUser;
+        }
+
+        System.out.println("Enter the new login:");
+        String login = in.readLine();
+        System.out.println("Enter the new password:");
+        String password = in.readLine();
+        System.out.println("Enter the new role:");
+        String role = in.readLine();
+        System.out.println("Enter the new favorite games:");
+        String favGames = in.readLine();
+        System.out.println("Enter the new phone number:");
+        String phoneNum = in.readLine();
+
+        List<String> updates = new ArrayList<>();
+        if (!login.isEmpty()) updates.add("login = '" + login + "'");
+        if (!password.isEmpty()) updates.add("password = '" + password + "'");
+        if (!role.isEmpty()) updates.add("role = '" + role + "'");
+        if (!favGames.isEmpty()) updates.add("favGames = '" + favGames + "'");
+        if (!phoneNum.isEmpty()) updates.add("phoneNum = '" + phoneNum + "'");
+
+        if (updates.isEmpty()) {
+            System.out.println("No updates were provided.");
+            return authorisedUser;
+        }
+
+        String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
+        PreparedStatement pstmt = esql.connection.prepareStatement(updateQuery);
+        pstmt.setString(1, authorisedUser);
+
+        int rowsUpdated = pstmt.executeUpdate();
+        if (rowsUpdated > 0) {
+            System.out.println("Profile updated successfully.");
+            if (!login.isEmpty()) {
+                authorisedUser = login;
+            }
+        } else {
+            System.out.println("Profile update failed.");
+        }
+
+         pstmt.close();
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
+      return authorisedUser;
    }
+
+
+
+
    public static void viewCatalog(GameRental esql) {  
       try{
          BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
