@@ -564,9 +564,17 @@ public class GameRental {
          System.err.println (e.getMessage());
       }
    }
-   public static void updateCatalog(GameRental esql) {
+   public static void updateCatalog(GameRental esql, String authorisedUser) {
     try {
         
+        String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+        List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
+
+        if (userRole.isEmpty() || !userRole.get(0).get(0).equalsIgnoreCase("manager")) {
+            System.out.println("Only managers are allowed to update the catalog.");
+            return;
+        }
+
         System.out.println("This updates catalog");
 
         
