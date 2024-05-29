@@ -297,7 +297,7 @@ public class GameRental {
                    case 7: viewOrderInfo(esql); break;
                    case 8: viewTrackingInfo(esql); break;
                    case 9: updateTrackingInfo(esql); break;
-                   case 10: updateCatalog(esql); break;
+                   case 10: updateCatalog(esql, authorisedUser); break;
                    case 11: updateUser(esql); break;
 
 
