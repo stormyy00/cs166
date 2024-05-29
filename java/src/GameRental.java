@@ -565,15 +565,61 @@ public class GameRental {
       }
    }
    public static void updateCatalog(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This updates catalog");
+    try {
+        
+        System.out.println("This updates catalog");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+        
+        System.out.println("Enter the Game ID to update:");
+        String gameID = in.readLine();
+
+        
+        ArrayList<String> updates = new ArrayList<>();
+
+        
+        System.out.println("Enter the new game name:");
+        String gameName = in.readLine();
+        if (!gameName.isEmpty()) {
+            updates.add(String.format("gameName = '%s'", gameName));
+        }
+
+        System.out.println("Enter the new genre:");
+        String genre = in.readLine();
+        if (!genre.isEmpty()) {
+            updates.add(String.format("genre = '%s'", genre));
+        }
+
+        System.out.println("Enter the new price:");
+        String priceInput = in.readLine();
+        if (!priceInput.isEmpty()) {
+            try {
+                Double price = Double.parseDouble(priceInput);
+                updates.add(String.format("price = %s", price));
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid price format.");
+                return;
+            }
+        }
+
+        
+        if (updates.isEmpty()) {
+            System.out.println("No updates were provided.");
+            return;
+        }
+
+        String query = "UPDATE Catalog SET " + String.join(", ", updates) + String.format(" WHERE gameID = '%s'", gameID);
+
+        
+        esql.executeUpdate(query);
+        System.out.println("Catalog updated successfully.");
+
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
+
+
    public static void updateUser(GameRental esql) {
       try{
        String query = "";
