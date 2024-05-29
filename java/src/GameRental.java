@@ -402,30 +402,70 @@ public class GameRental {
 // Rest of the functions definition go in here
 
    public static void viewProfile(GameRental esql, String authorisedUser) {
-      try{
-         System.out.println("This views profile");
-         String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
-         List<List<String>> profile = esql.executeQueryAndReturnResult(query);
+     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-         if(!profile.isEmpty()){
-            System.out.println("===========================");
-            System.out.println("\tUser Profile");
-            System.out.println("===========================");
-            for (List<String> row : profile) {
-               System.out.println("Name: " + row.get(0));
-               System.out.println("password:" + row.get(1));
-               System.out.println("role:" + row.get(2));
-               System.out.println("favoite games:" + row.get(3));
-               System.out.println("Phone Number:" + row.get(4));
-               System.out.println("Overdue Games:" + row.get(5));
+        try {
+
+            String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
+            List<List<String>> profile = esql.executeQueryAndReturnResult(query);
+
+            if (!profile.isEmpty()) {
+
+                System.out.println("===========================");
+                System.out.println("\tUser Profile");
+                System.out.println("===========================");
+                for (List<String> row : profile) {
+                    System.out.println("Name: " + row.get(0));
+                    System.out.println("Password: " + row.get(1));
+                    System.out.println("Role: " + row.get(2));
+                    System.out.println("Favorite Games: " + row.get(3));
+                    System.out.println("Phone Number: " + row.get(4));
+                    System.out.println("Overdue Games: " + row.get(5));
+                }
+
+                System.out.println("Would you like to update your profile? (yes/no)");
+                String response = reader.readLine();
+
+                if (response.equalsIgnoreCase("yes")) {
+                    System.out.println("What would you like to update?");
+                    System.out.println("1. Favorite Games");
+                    System.out.println("2. Phone Number");
+                    System.out.println("3. Password");
+                    String choiceStr = reader.readLine();
+                    int choice = Integer.parseInt(choiceStr);
+
+                    switch (choice) {
+                        case 1:
+                            System.out.println("Enter new favorite games list:");
+                            String newFavGames = reader.readLine();
+                            query = String.format("UPDATE USERS SET favGames = '%s' WHERE login = '%s'", newFavGames, authorisedUser);
+                            esql.executeUpdate(query);
+                            System.out.println("Favorite games updated successfully.");
+                            break;
+                        case 2:
+                            System.out.println("Enter new phone number:");
+                            String newPhoneNum = reader.readLine();
+                            query = String.format("UPDATE USERS SET phoneNum = '%s' WHERE login = '%s'", newPhoneNum, authorisedUser);
+                            esql.executeUpdate(query);
+                            System.out.println("Phone number updated successfully.");
+                            break;
+                        case 3:
+                            System.out.println("Enter new password:");
+                            String newPassword = reader.readLine();
+                            query = String.format("UPDATE USERS SET password = '%s' WHERE login = '%s'", newPassword, authorisedUser);
+                            esql.executeUpdate(query);
+                            System.out.println("Password changed successfully.");
+                            break;
+                        default:
+                            System.out.println("Invalid choice.");
+                    }
+                }
+            } else {
+                System.out.println("No user found with the login: " + authorisedUser);
             }
-
-         }else{
-            System.out.println("No user found with the login: " + authorisedUser);
-         }
-      }catch(Exception e){
-         System.err.println (e.getMessage());
-      }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
    }
    public static void updateProfile(GameRental esql) {
       try{
@@ -439,10 +479,80 @@ public class GameRental {
    }
    public static void viewCatalog(GameRental esql) {  
       try{
-       String query = "";
-         System.out.println("This views catalog");
+         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-       
+            System.out.println("This views catalog");
+            System.out.println("How would you like to view the catalog?");
+            System.out.println("1. Genre");
+            System.out.println("2. Price");
+            System.out.println("3. Search Game ID");
+
+            int choice = Integer.parseInt(in.readLine()); 
+            String genre = null;
+            Double priceFilter = null;
+            String sortByPrice = null;
+            String gameId = null;
+
+            switch (choice) {
+                case 1:
+                    System.out.println("Enter Genre: ");
+                    genre = in.readLine();
+                    System.out.println("Sort by price (ASC/DESC): ");
+                    sortByPrice = in.readLine();
+                    break;
+                case 2:
+                    System.out.println("Enter maximum price: ");
+                    priceFilter = Double.parseDouble(in.readLine());
+                    System.out.println("Sort by price (ASC/DESC): ");
+                    sortByPrice = in.readLine();
+                    break;
+                case 3:
+                    System.out.println("Enter Game ID: ");
+                    gameId = in.readLine();
+                    break;
+                default:
+                    System.out.println("Invalid choice");
+                    return;
+            }
+
+            StringBuilder query = new StringBuilder("SELECT gameName, genre, price FROM Catalog");
+            boolean hasFilter = false;
+
+            if (gameId != null && !gameId.isEmpty()) {
+                query.append(" WHERE gameID = '").append(gameId).append("'");
+                hasFilter = true;
+            }
+            if (genre != null && !genre.isEmpty()) {
+                if (hasFilter) {
+                    query.append(" AND");
+                } else {
+                    query.append(" WHERE");
+                    hasFilter = true;
+                }
+                query.append(" genre = '").append(genre).append("'");
+            }
+            if (priceFilter != null) {
+                if (hasFilter) {
+                    query.append(" AND");
+                } else {
+                    query.append(" WHERE");
+                    hasFilter = true;
+                }
+                query.append(" price <= ").append(priceFilter);
+            }
+
+            if (sortByPrice != null && !sortByPrice.isEmpty()) {
+                query.append(" ORDER BY price ").append(sortByPrice.equalsIgnoreCase("ASC") ? "ASC" : "DESC");
+            }
+
+            String finalQuery = query.toString();
+            System.out.println("Executing query: " + finalQuery);
+
+            List<List<String>> viewCatalog = esql.executeQueryAndReturnResult(finalQuery);
+
+            for (List<String> view : viewCatalog) {
+                System.out.println("Game Name: " + view.get(0) + ", Genre: " + view.get(1) + ", Price: $" + view.get(2));
+            }
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
