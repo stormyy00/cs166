@@ -402,8 +402,6 @@ public class GameRental {
 // Rest of the functions definition go in here
 
    public static void viewProfile(GameRental esql, String authorisedUser) {
-     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
         try {
 
             String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
@@ -421,44 +419,6 @@ public class GameRental {
                     System.out.println("Favorite Games: " + row.get(3));
                     System.out.println("Phone Number: " + row.get(4));
                     System.out.println("Overdue Games: " + row.get(5));
-                }
-
-                System.out.println("Would you like to update your profile? (yes/no)");
-                String response = reader.readLine();
-
-                if (response.equalsIgnoreCase("yes")) {
-                    System.out.println("What would you like to update?");
-                    System.out.println("1. Favorite Games");
-                    System.out.println("2. Phone Number");
-                    System.out.println("3. Password");
-                    String choiceStr = reader.readLine();
-                    int choice = Integer.parseInt(choiceStr);
-
-                    switch (choice) {
-                        case 1:
-                            System.out.println("Enter new favorite games list:");
-                            String newFavGames = reader.readLine();
-                            query = String.format("UPDATE USERS SET favGames = '%s' WHERE login = '%s'", newFavGames, authorisedUser);
-                            esql.executeUpdate(query);
-                            System.out.println("Favorite games updated successfully.");
-                            break;
-                        case 2:
-                            System.out.println("Enter new phone number:");
-                            String newPhoneNum = reader.readLine();
-                            query = String.format("UPDATE USERS SET phoneNum = '%s' WHERE login = '%s'", newPhoneNum, authorisedUser);
-                            esql.executeUpdate(query);
-                            System.out.println("Phone number updated successfully.");
-                            break;
-                        case 3:
-                            System.out.println("Enter new password:");
-                            String newPassword = reader.readLine();
-                            query = String.format("UPDATE USERS SET password = '%s' WHERE login = '%s'", newPassword, authorisedUser);
-                            esql.executeUpdate(query);
-                            System.out.println("Password changed successfully.");
-                            break;
-                        default:
-                            System.out.println("Invalid choice.");
-                    }
                 }
             } else {
                 System.out.println("No user found with the login: " + authorisedUser);
@@ -487,7 +447,7 @@ public class GameRental {
             System.out.println("2. Price");
             System.out.println("3. Search Game ID");
 
-            int choice = Integer.parseInt(in.readLine()); 
+            int choice = readChoice(); 
             String genre = null;
             Double priceFilter = null;
             String sortByPrice = null;
