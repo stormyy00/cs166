@@ -627,7 +627,6 @@ public class GameRental {
    }
 
 
-
    public static void updateUser(GameRental esql) {
       try{
        String query = "";
