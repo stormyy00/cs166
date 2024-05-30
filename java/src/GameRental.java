@@ -298,7 +298,7 @@ public class GameRental {
                    case 8: viewTrackingInfo(esql); break;
                    case 9: updateTrackingInfo(esql); break;
                    case 10: updateCatalog(esql, authorisedUser); break;
-                   case 11: updateUser(esql); break;
+                   case 11: updateUser(esql, authorisedUser); break;
 
 
 
@@ -624,14 +624,75 @@ public class GameRental {
    }
 
 
-   public static void updateUser(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This updates user");
+   public static void updateUser(GameRental esql, String authorisedUser) {
+      try {
+        
+         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+         List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+         if (userRole.isEmpty()) {
+               System.out.println("No user found with the login: " + authorisedUser);
+               return;
+         } else {
+               System.out.println("User role: " + userRole.get(0).get(0).trim());
+         }
+
+         if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("Only managers are allowed to update user information.");
+               return;
+         }
+
+   
+         System.out.println("Enter the login of the user to update:");
+         String userLogin = in.readLine();
+
+         String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
+         PreparedStatement checkUserStmt = esql._connection.prepareStatement(checkUserQuery);
+         checkUserStmt.setString(1, userLogin);
+         ResultSet rs = checkUserStmt.executeQuery();
+         rs.next();
+         int userCount = rs.getInt(1);
+         checkUserStmt.close();
+
+         if (userCount == 0) {
+               System.out.println("No user found with the login: " + userLogin);
+               return;
+         }
+
+         
+         System.out.println("Enter the new login:");
+         String newLogin = in.readLine();
+
+         System.out.println("Enter the new role:");
+         String newRole = in.readLine();
+
+         System.out.println("Enter the new number of overdue games:");
+         String newNumOverdueGames = in.readLine();
+
+         List<String> updates = new ArrayList<>();
+         if (!newLogin.isEmpty()) updates.add("login = '" + newLogin + "'");
+         if (!newRole.isEmpty()) updates.add("role = '" + newRole + "'");
+         if (!newNumOverdueGames.isEmpty()) updates.add("numOverDueGames = " + Integer.parseInt(newNumOverdueGames));
+
+         if (updates.isEmpty()) {
+               System.out.println("No updates were provided.");
+               return;
+         }
+
+         String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
+         PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
+         pstmt.setString(1, userLogin);
+
+         int rowsUpdated = pstmt.executeUpdate();
+         if (rowsUpdated > 0) {
+               System.out.println("User updated successfully.");
+         } else {
+               System.out.println("User update failed.");
+         }
+
+         pstmt.close();
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
 
