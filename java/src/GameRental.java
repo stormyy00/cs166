@@ -435,7 +435,7 @@ public class GameRental {
 
         
         String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
-        PreparedStatement checkUserStmt = esql.connection.prepareStatement(checkUserQuery);
+        PreparedStatement checkUserStmt = esql._connection.prepareStatement(checkUserQuery);
         checkUserStmt.setString(1, authorisedUser);
         ResultSet rs = checkUserStmt.executeQuery();
         rs.next();
@@ -451,8 +451,6 @@ public class GameRental {
         String login = in.readLine();
         System.out.println("Enter the new password:");
         String password = in.readLine();
-        System.out.println("Enter the new role:");
-        String role = in.readLine();
         System.out.println("Enter the new favorite games:");
         String favGames = in.readLine();
         System.out.println("Enter the new phone number:");
@@ -461,7 +459,6 @@ public class GameRental {
         List<String> updates = new ArrayList<>();
         if (!login.isEmpty()) updates.add("login = '" + login + "'");
         if (!password.isEmpty()) updates.add("password = '" + password + "'");
-        if (!role.isEmpty()) updates.add("role = '" + role + "'");
         if (!favGames.isEmpty()) updates.add("favGames = '" + favGames + "'");
         if (!phoneNum.isEmpty()) updates.add("phoneNum = '" + phoneNum + "'");
 
@@ -471,7 +468,7 @@ public class GameRental {
         }
 
         String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
-        PreparedStatement pstmt = esql.connection.prepareStatement(updateQuery);
+        PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
         pstmt.setString(1, authorisedUser);
 
         int rowsUpdated = pstmt.executeUpdate();
