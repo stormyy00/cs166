@@ -9,7 +9,9 @@
  * Target DBMS: 'Postgres'
  *
  */
-
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.List;
 
 import java.sql.DriverManager;
 import java.sql.Connection;
@@ -402,30 +404,30 @@ public class GameRental {
 // Rest of the functions definition go in here
 
    public static void viewProfile(GameRental esql, String authorisedUser) {
-      try{
-         System.out.println("This views profile");
-         String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
-         List<List<String>> profile = esql.executeQueryAndReturnResult(query);
+        try {
 
-         if(!profile.isEmpty()){
-            System.out.println("===========================");
-            System.out.println("\tUser Profile");
-            System.out.println("===========================");
-            for (List<String> row : profile) {
-               System.out.println("Name: " + row.get(0));
-               System.out.println("password:" + row.get(1));
-               System.out.println("role:" + row.get(2));
-               System.out.println("favoite games:" + row.get(3));
-               System.out.println("Phone Number:" + row.get(4));
-               System.out.println("Overdue Games:" + row.get(5));
+            String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
+            List<List<String>> profile = esql.executeQueryAndReturnResult(query);
+
+            if (!profile.isEmpty()) {
+
+                System.out.println("===========================");
+                System.out.println("\tUser Profile");
+                System.out.println("===========================");
+                for (List<String> row : profile) {
+                    System.out.println("Name: " + row.get(0));
+                    System.out.println("Password: " + row.get(1));
+                    System.out.println("Role: " + row.get(2));
+                    System.out.println("Favorite Games: " + row.get(3));
+                    System.out.println("Phone Number: " + row.get(4));
+                    System.out.println("Overdue Games: " + row.get(5));
+                }
+            } else {
+                System.out.println("No user found with the login: " + authorisedUser);
             }
-
-         }else{
-            System.out.println("No user found with the login: " + authorisedUser);
-         }
-      }catch(Exception e){
-         System.err.println (e.getMessage());
-      }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
    }
    public static void updateProfile(GameRental esql) {
       try{
@@ -439,14 +441,76 @@ public class GameRental {
    }
    public static void viewCatalog(GameRental esql) {  
       try{
-       String query = "";
-         System.out.println("This views catalog");
+         System.out.println("Enter the criteria to search by (1. gameID, 2. genre, or 3. price):");
+         int criteria = readChoice();
+         String query = "";
+         
+         switch (criteria) {
+            case 1:
+                  System.out.println("Enter the GameID:");
+                  String gameId = in.readLine();
+                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE gameID = '%s';", gameId);
+                  break;
+            case 2:
+                  System.out.println("Enter the Genre:");
+                  String genre = in.readLine();
+                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE genre = '%s';", genre);
+                  break;
+            case 3:
+                  System.out.println("Enter the Price:");
+                  String price = in.readLine();
+                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE price = '%s';", price);
+                  break;
+            default:
+                  System.out.println("Invalid criteria. Please enter 'gameID', 'genre', or 'price'.");
+                  return; // Exit the method if the criteria is invalid
+         }
+         System.out.println("Do you want to sort the results? Enter 'asc' for ascending, 'desc' for descending, or 'none' for no sorting:");
+         String sortChoice = in.readLine().trim().toLowerCase();;
+         
+         if (sortChoice.equals("asc") || sortChoice.equals("desc")) {
+            query += String.format(" ORDER BY price %s", sortChoice.toUpperCase()); // Assuming sorting by price for demonstration
+         } else if (!sortChoice.equals("none")) {
+            System.out.println("Results will be displayed without sorting.");
+         }
+    
+         List<List<String>> catalogView = esql.executeQueryAndReturnResult(query);
+         if (catalogView.size() == 0) {
+            System.out.println("❌ No games found for the given filter.");
+         } else {
+            displayCatalog(catalogView);
+            // System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
+            // for (List<String> product : storeProducts) {
+            //       System.out.println("Game Name: " + product.get(0) + " Genre: " + product.get(1) + " Price: " + product.get(2));
+            // }
+            // System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
 
-       
+            // System.out.println("Do you want to sort the results? (1. yes/2. no)");
+            //    int sortResponse = readChoice();
+            //     if (sortResponse == 1) {
+            //         System.out.println("Enter the field to sort by (gameName, genre, price):");
+            //         String sortField = in.readLine().trim().toLowerCase();
+            //         System.out.println("Enter the order (asc/desc):");
+            //         String sortOrder = in.readLine().trim();
+                     
+            //         query = query.replace(";", "") + String.format(" ORDER BY %s %s;", sortField, sortOrder);
+            //         System.out.println(query);
+
+            //         catalogView = esql.executeQueryAndReturnResult(query);
+            //         displayCatalog(catalogView);
+                  }
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
    }
+   public static void displayCatalog(List<List<String>> results) {
+        System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
+        for (List<String> catalog : results) {
+            System.out.println("Game Name: " + catalog.get(0) + " catalog: " + catalog.get(1) + " catalog: " + catalog.get(2));
+        }
+        System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
+    }
+
    public static void placeOrder(GameRental esql) {
       try{
        String query = "";
