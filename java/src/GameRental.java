@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.Math;
+import java.sql.PreparedStatement;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -290,7 +291,7 @@ public class GameRental {
                 System.out.println("20. Log out");
                 switch (readChoice()){
                    case 1: viewProfile(esql, authorisedUser); break;
-                   case 2: updateProfile(esql); break;
+                   case 2: authorisedUser = updateProfile(esql, authorisedUser); break;
                    case 3: viewCatalog(esql); break;
                    case 4: placeOrder(esql); break;
                    case 5: viewAllOrders(esql); break;
@@ -298,8 +299,8 @@ public class GameRental {
                    case 7: viewOrderInfo(esql); break;
                    case 8: viewTrackingInfo(esql); break;
                    case 9: updateTrackingInfo(esql); break;
-                   case 10: updateCatalog(esql); break;
-                   case 11: updateUser(esql); break;
+                   case 10: updateCatalog(esql, authorisedUser); break;
+                   case 11: updateUser(esql, authorisedUser); break;
 
 
 
@@ -429,16 +430,69 @@ public class GameRental {
             System.err.println(e.getMessage());
         }
    }
-   public static void updateProfile(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This update profile");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+   public static String updateProfile(GameRental esql, String authorisedUser) {
+    try {
+        System.out.println("This updates profile");
+
+        
+        String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
+        PreparedStatement checkUserStmt = esql._connection.prepareStatement(checkUserQuery);
+        checkUserStmt.setString(1, authorisedUser);
+        ResultSet rs = checkUserStmt.executeQuery();
+        rs.next();
+        int userCount = rs.getInt(1);
+        checkUserStmt.close();
+
+        if (userCount == 0) {
+            System.out.println("No user found with the login: " + authorisedUser);
+            return authorisedUser;
+        }
+
+        System.out.println("Enter the new login:");
+        String login = in.readLine();
+        System.out.println("Enter the new password:");
+        String password = in.readLine();
+        System.out.println("Enter the new favorite games:");
+        String favGames = in.readLine();
+        System.out.println("Enter the new phone number:");
+        String phoneNum = in.readLine();
+
+        List<String> updates = new ArrayList<>();
+        if (!login.isEmpty()) updates.add("login = '" + login + "'");
+        if (!password.isEmpty()) updates.add("password = '" + password + "'");
+        if (!favGames.isEmpty()) updates.add("favGames = '" + favGames + "'");
+        if (!phoneNum.isEmpty()) updates.add("phoneNum = '" + phoneNum + "'");
+
+        if (updates.isEmpty()) {
+            System.out.println("No updates were provided.");
+            return authorisedUser;
+        }
+
+        String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
+        PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
+        pstmt.setString(1, authorisedUser);
+
+        int rowsUpdated = pstmt.executeUpdate();
+        if (rowsUpdated > 0) {
+            System.out.println("Profile updated successfully.");
+            if (!login.isEmpty()) {
+                authorisedUser = login;
+            }
+        } else {
+            System.out.println("Profile update failed.");
+        }
+
+         pstmt.close();
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
+      return authorisedUser;
    }
+
+
+
+
    public static void viewCatalog(GameRental esql) {  
       try{
          System.out.println("Enter the criteria to search by (1. gameID, 2. genre, or 3. price):");
@@ -512,15 +566,54 @@ public class GameRental {
     }
 
    public static void placeOrder(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This places order");
+      try {
+         List<Integer> gameIDs = new ArrayList<>();
+         List<Integer> unitsOrdered = new ArrayList<>();
+         double totalPrice = 0.0;
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+         while (true) {
+            System.out.println("Enter the game ID to rent:");
+            String input = in.readLine();
+
+            int gameID = Integer.parseInt(input);
+            System.out.println("Enter the number of units for game ID " + gameID + ":");
+            int units = Integer.parseInt(in.readLine());
+
+            
+            String priceQuery = String.format("SELECT price FROM Catalog WHERE gameID = %d", gameID);
+            List<List<String>> result = esql.executeQueryAndReturnResult(priceQuery);
+            if (result.isEmpty()) {
+               System.out.println("Game ID " + gameID + " not found in catalog.");
+               continue;
+            }
+
+            double price = Double.parseDouble(result.get(0).get(0));
+            totalPrice += price * units;
+
+            gameIDs.add(gameID);
+            unitsOrdered.add(units);
+         }
+
+         if (gameIDs.isEmpty()) {
+            System.out.println("No games ordered.");
+            return;
+         }
+
+         System.out.println("Total price of rental order: $" + totalPrice);
+
+         // After placing the rental order, the rental order
+         // information needs to be inserted in the RentalOrder table with a unique rentalOrderID.
+         // Each gameID, rentalOrderID, and the unitsOrdered should be inserted into
+         // GamesInOrder for every game in the order. Also, a TrackingInfo record with a unique
+         // trackingID should be created for the order.
+
+         // need to implement ^
+
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
    public static void viewAllOrders(GameRental esql) {
       try{
        String query = "";
@@ -551,16 +644,47 @@ public class GameRental {
          System.err.println (e.getMessage());
       }
    }
-   public static void viewTrackingInfo(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This views trakcing info");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+
+   public static void viewTrackingInfo(GameRental esql) {
+      try {
+         System.out.println("Enter your user login:");
+         String userLogin = in.readLine();
+
+         System.out.println("Enter the Tracking ID:");
+         String trackingID = in.readLine();
+
+         String query = String.format(
+               "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
+               "FROM TrackingInfo T, RentalOrder R " +
+               "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
+               trackingID, userLogin
+         );
+
+         List<List<String>> result = esql.executeQueryAndReturnResult(query);
+
+         if (result.isEmpty()) {
+               System.out.println("No tracking information found.");
+         } else {
+               System.out.println("===========================");
+               System.out.println("Tracking Information");
+               System.out.println("===========================");
+               for (List<String> row : result) {
+                  System.out.println("Tracking ID: " + row.get(0));
+                  System.out.println("Courier Name: " + row.get(1));
+                  System.out.println("Rental Order ID: " + row.get(2));
+                  System.out.println("Current Location: " + row.get(3));
+                  System.out.println("Status: " + row.get(4));
+                  System.out.println("Last Updated Date: " + row.get(5));
+                  System.out.println("Additional Comments: " + row.get(6));
+               }
+         }
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
+
    public static void updateTrackingInfo(GameRental esql) {
       try{
        String query = "";
@@ -571,24 +695,139 @@ public class GameRental {
          System.err.println (e.getMessage());
       }
    }
-   public static void updateCatalog(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This updates catalog");
+   
+   public static void updateCatalog(GameRental esql, String authorisedUser) {
+    try {
+        
+        String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+        List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+        if (userRole.isEmpty() || !userRole.get(0).get(0).equalsIgnoreCase("manager")) {
+            System.out.println("Only managers are allowed to update the catalog.");
+            return;
+        }
+
+        System.out.println("This updates catalog");
+
+        
+        System.out.println("Enter the Game ID to update:");
+        String gameID = in.readLine();
+
+        
+        ArrayList<String> updates = new ArrayList<>();
+
+        
+        System.out.println("Enter the new game name:");
+        String gameName = in.readLine();
+        if (!gameName.isEmpty()) {
+            updates.add(String.format("gameName = '%s'", gameName));
+        }
+
+        System.out.println("Enter the new genre:");
+        String genre = in.readLine();
+        if (!genre.isEmpty()) {
+            updates.add(String.format("genre = '%s'", genre));
+        }
+
+        System.out.println("Enter the new price:");
+        String priceInput = in.readLine();
+        if (!priceInput.isEmpty()) {
+            try {
+                Double price = Double.parseDouble(priceInput);
+                updates.add(String.format("price = %s", price));
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid price format.");
+                return;
+            }
+        }
+
+        
+        if (updates.isEmpty()) {
+            System.out.println("No updates were provided.");
+            return;
+        }
+
+        String query = "UPDATE Catalog SET " + String.join(", ", updates) + String.format(" WHERE gameID = '%s'", gameID);
+
+        
+        esql.executeUpdate(query);
+        System.out.println("Catalog updated successfully.");
+
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
-   public static void updateUser(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This updates user");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+
+   public static void updateUser(GameRental esql, String authorisedUser) {
+      try {
+        
+         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+         List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
+
+         if (userRole.isEmpty()) {
+               System.out.println("No user found with the login: " + authorisedUser);
+               return;
+         } else {
+               System.out.println("User role: " + userRole.get(0).get(0).trim());
+         }
+
+         if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("Only managers are allowed to update user information.");
+               return;
+         }
+
+   
+         System.out.println("Enter the login of the user to update:");
+         String userLogin = in.readLine();
+
+         String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
+         PreparedStatement checkUserStmt = esql._connection.prepareStatement(checkUserQuery);
+         checkUserStmt.setString(1, userLogin);
+         ResultSet rs = checkUserStmt.executeQuery();
+         rs.next();
+         int userCount = rs.getInt(1);
+         checkUserStmt.close();
+
+         if (userCount == 0) {
+               System.out.println("No user found with the login: " + userLogin);
+               return;
+         }
+
+         
+         System.out.println("Enter the new login:");
+         String newLogin = in.readLine();
+
+         System.out.println("Enter the new role:");
+         String newRole = in.readLine();
+
+         System.out.println("Enter the new number of overdue games:");
+         String newNumOverdueGames = in.readLine();
+
+         List<String> updates = new ArrayList<>();
+         if (!newLogin.isEmpty()) updates.add("login = '" + newLogin + "'");
+         if (!newRole.isEmpty()) updates.add("role = '" + newRole + "'");
+         if (!newNumOverdueGames.isEmpty()) updates.add("numOverDueGames = " + Integer.parseInt(newNumOverdueGames));
+
+         if (updates.isEmpty()) {
+               System.out.println("No updates were provided.");
+               return;
+         }
+
+         String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
+         PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
+         pstmt.setString(1, userLogin);
+
+         int rowsUpdated = pstmt.executeUpdate();
+         if (rowsUpdated > 0) {
+               System.out.println("User updated successfully.");
+         } else {
+               System.out.println("User update failed.");
+         }
+
+         pstmt.close();
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
 
