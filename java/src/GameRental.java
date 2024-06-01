@@ -501,16 +501,56 @@ public class GameRental {
          System.err.println (e.getMessage());
       }
    }
-   public static void placeOrder(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This places order");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+   public static void placeOrder(GameRental esql) {
+      try {
+         List<Integer> gameIDs = new ArrayList<>();
+         List<Integer> unitsOrdered = new ArrayList<>();
+         double totalPrice = 0.0;
+
+         while (true) {
+            System.out.println("Enter the game ID to rent:");
+            String input = in.readLine();
+
+            int gameID = Integer.parseInt(input);
+            System.out.println("Enter the number of units for game ID " + gameID + ":");
+            int units = Integer.parseInt(in.readLine());
+
+            
+            String priceQuery = String.format("SELECT price FROM Catalog WHERE gameID = %d", gameID);
+            List<List<String>> result = esql.executeQueryAndReturnResult(priceQuery);
+            if (result.isEmpty()) {
+               System.out.println("Game ID " + gameID + " not found in catalog.");
+               continue;
+            }
+
+            double price = Double.parseDouble(result.get(0).get(0));
+            totalPrice += price * units;
+
+            gameIDs.add(gameID);
+            unitsOrdered.add(units);
+         }
+
+         if (gameIDs.isEmpty()) {
+            System.out.println("No games ordered.");
+            return;
+         }
+
+         System.out.println("Total price of rental order: $" + totalPrice);
+
+         // After placing the rental order, the rental order
+         // information needs to be inserted in the RentalOrder table with a unique rentalOrderID.
+         // Each gameID, rentalOrderID, and the unitsOrdered should be inserted into
+         // GamesInOrder for every game in the order. Also, a TrackingInfo record with a unique
+         // trackingID should be created for the order.
+
+         // need to implement ^
+
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
    public static void viewAllOrders(GameRental esql) {
       try{
        String query = "";
@@ -561,6 +601,7 @@ public class GameRental {
          System.err.println (e.getMessage());
       }
    }
+   
    public static void updateCatalog(GameRental esql, String authorisedUser) {
     try {
         
