@@ -465,7 +465,15 @@ public class GameRental {
                   System.out.println("Invalid criteria. Please enter 'gameID', 'genre', or 'price'.");
                   return; // Exit the method if the criteria is invalid
          }
-
+         System.out.println("Do you want to sort the results? Enter 'asc' for ascending, 'desc' for descending, or 'none' for no sorting:");
+         String sortChoice = in.readLine().trim().toLowerCase();;
+         
+         if (sortChoice.equals("asc") || sortChoice.equals("desc")) {
+            query += String.format(" ORDER BY price %s", sortChoice.toUpperCase()); // Assuming sorting by price for demonstration
+         } else if (!sortChoice.equals("none")) {
+            System.out.println("Results will be displayed without sorting.");
+         }
+    
          List<List<String>> catalogView = esql.executeQueryAndReturnResult(query);
          if (catalogView.size() == 0) {
             System.out.println("❌ No games found for the given filter.");
@@ -477,95 +485,20 @@ public class GameRental {
             // }
             // System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
 
-            System.out.println("Do you want to sort the results? (1. yes/2. no)");
-               int sortResponse = readChoice();
-                if (sortResponse == 1) {
-                    System.out.println("Enter the field to sort by (gameName, genre, price):");
-                    String sortField = in.readLine().trim().toLowerCase();
-                    System.out.println("Enter the order (asc/desc):");
-                    String sortOrder = in.readLine().trim().toLowerCase();
+            // System.out.println("Do you want to sort the results? (1. yes/2. no)");
+            //    int sortResponse = readChoice();
+            //     if (sortResponse == 1) {
+            //         System.out.println("Enter the field to sort by (gameName, genre, price):");
+            //         String sortField = in.readLine().trim().toLowerCase();
+            //         System.out.println("Enter the order (asc/desc):");
+            //         String sortOrder = in.readLine().trim();
+                     
+            //         query = query.replace(";", "") + String.format(" ORDER BY %s %s;", sortField, sortOrder);
+            //         System.out.println(query);
 
-                    query = query.replace(";", "") + String.format(" ORDER BY %s %s;", sortField, sortOrder);
-
-                    catalogView = esql.executeQueryAndReturnResult(query);
-                    displayCatalog(catalogView);
+            //         catalogView = esql.executeQueryAndReturnResult(query);
+            //         displayCatalog(catalogView);
                   }
-               }
-
-         // BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-
-         //    System.out.println("This views catalog");
-         //    System.out.println("How would you like to view the catalog?");
-         //    System.out.println("1. Genre");
-         //    System.out.println("2. Price");
-         //    System.out.println("3. Search Game ID");
-
-         //    int choice = readChoice(); 
-         //    String genre = null;
-         //    Double priceFilter = null;
-         //    String sortByPrice = null;
-         //    String gameId = null;
-
-         //    switch (choice) {
-         //        case 1:
-         //            System.out.println("Enter Genre: ");
-         //            genre = in.readLine();
-         //            System.out.println("Sort by price (ASC/DESC): ");
-         //            sortByPrice = in.readLine();
-         //            break;
-         //        case 2:
-         //            System.out.println("Enter maximum price: ");
-         //            priceFilter = Double.parseDouble(in.readLine());
-         //            System.out.println("Sort by price (ASC/DESC): ");
-         //            sortByPrice = in.readLine();
-         //            break;
-         //        case 3:
-         //            System.out.println("Enter Game ID: ");
-         //            gameId = in.readLine();
-         //            break;
-         //        default:
-         //            System.out.println("Invalid choice");
-         //            return;
-         //    }
-
-         //    StringBuilder query = new StringBuilder("SELECT gameName, genre, price FROM Catalog WHERE gameID = '%s' OR genere = '%s' OR price = '%s'", gameId, genre, priceFilter);
-         //    boolean hasFilter = false;
-
-         //    if (gameId != null && !gameId.isEmpty()) {
-         //        query.append(" WHERE gameID = '").append(gameId).append("'");
-         //        hasFilter = true;
-         //    }
-         //    if (genre != null && !genre.isEmpty()) {
-         //        if (hasFilter) {
-         //            query.append(" AND");
-         //        } else {
-         //            query.append(" WHERE");
-         //            hasFilter = true;
-         //        }
-         //        query.append(" genre = '").append(genre).append("'");
-         //    }
-         //    if (priceFilter != null) {
-         //        if (hasFilter) {
-         //            query.append(" AND");
-         //        } else {
-         //            query.append(" WHERE");
-         //            hasFilter = true;
-         //        }
-         //        query.append(" price <= ").append(priceFilter);
-         //    }
-
-         //    if (sortByPrice != null && !sortByPrice.isEmpty()) {
-         //        query.append(" ORDER BY price ").append(sortByPrice.equalsIgnoreCase("ASC") ? "ASC" : "DESC");
-         //    }
-
-         //    String finalQuery = query.toString();
-         //    System.out.println("Executing query: " + finalQuery);
-
-         //    List<List<String>> viewCatalog = esql.executeQueryAndReturnResult(finalQuery);
-
-         //    for (List<String> view : viewCatalog) {
-         //        System.out.println("Game Name: " + view.get(0) + ", Genre: " + view.get(1) + ", Price: $" + view.get(2));
-         //    }
       }catch(Exception e){
          System.err.println (e.getMessage());
       }
