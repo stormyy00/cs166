@@ -581,16 +581,47 @@ public class GameRental {
          System.err.println (e.getMessage());
       }
    }
-   public static void viewTrackingInfo(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This views trakcing info");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+
+   public static void viewTrackingInfo(GameRental esql) {
+      try {
+         System.out.println("Enter your user login:");
+         String userLogin = in.readLine();
+
+         System.out.println("Enter the Tracking ID:");
+         String trackingID = in.readLine();
+
+         String query = String.format(
+               "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
+               "FROM TrackingInfo T, RentalOrder R " +
+               "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
+               trackingID, userLogin
+         );
+
+         List<List<String>> result = esql.executeQueryAndReturnResult(query);
+
+         if (result.isEmpty()) {
+               System.out.println("No tracking information found.");
+         } else {
+               System.out.println("===========================");
+               System.out.println("Tracking Information");
+               System.out.println("===========================");
+               for (List<String> row : result) {
+                  System.out.println("Tracking ID: " + row.get(0));
+                  System.out.println("Courier Name: " + row.get(1));
+                  System.out.println("Rental Order ID: " + row.get(2));
+                  System.out.println("Current Location: " + row.get(3));
+                  System.out.println("Status: " + row.get(4));
+                  System.out.println("Last Updated Date: " + row.get(5));
+                  System.out.println("Additional Comments: " + row.get(6));
+               }
+         }
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
+
    public static void updateTrackingInfo(GameRental esql) {
       try{
        String query = "";
