@@ -298,7 +298,7 @@ public class GameRental {
                    case 6: viewRecentOrders(esql); break;
                    case 7: viewOrderInfo(esql); break;
                    case 8: viewTrackingInfo(esql); break;
-                   case 9: updateTrackingInfo(esql); break;
+                   case 9: updateTrackingInfo(esql, authorisedUser); break;
                    case 10: updateCatalog(esql, authorisedUser); break;
                    case 11: updateUser(esql, authorisedUser); break;
 
@@ -684,17 +684,81 @@ public class GameRental {
       }
    }
 
+   public static void updateTrackingInfo(GameRental esql, String authorisedUser) {
+      try {
+         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+         List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
-   public static void updateTrackingInfo(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This updates tracking info");
+         if (userRole.isEmpty()) {
+               System.out.println("No user found with the login: " + authorisedUser);
+               return;
+         } else {
+               System.out.println("User role: " + userRole.get(0).get(0).trim());
+         }
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+         if (!userRole.get(0).get(0).trim().equalsIgnoreCase("employee") &&
+               !userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("Only employees and managers are allowed to update tracking information.");
+               return;
+         }
+
+         System.out.println("Enter the Tracking ID of the tracking information to update:");
+         String trackingID = in.readLine();
+
+         String checkTrackingQuery = "SELECT COUNT(*) FROM TrackingInfo WHERE trackingID = ?";
+         PreparedStatement checkTrackingStmt = esql._connection.prepareStatement(checkTrackingQuery);
+         checkTrackingStmt.setString(1, trackingID);
+         ResultSet rs = checkTrackingStmt.executeQuery();
+         rs.next();
+         int trackingCount = rs.getInt(1);
+         checkTrackingStmt.close();
+
+         if (trackingCount == 0) {
+               System.out.println("No tracking information found with the Tracking ID: " + trackingID);
+               return;
+         }
+
+         System.out.println("Enter new status:");
+         String status = in.readLine();
+
+         System.out.println("Enter new current location:");
+         String currentLocation = in.readLine();
+
+         System.out.println("Enter new courier name:");
+         String courierName = in.readLine();
+
+         System.out.println("Enter additional comments:");
+         String additionalComments = in.readLine();
+
+         List<String> updates = new ArrayList<>();
+         if (!status.isEmpty()) updates.add("status = '" + status + "'");
+         if (!currentLocation.isEmpty()) updates.add("currentLocation = '" + currentLocation + "'");
+         if (!courierName.isEmpty()) updates.add("courierName = '" + courierName + "'");
+         if (!additionalComments.isEmpty()) updates.add("additionalComments = '" + additionalComments + "'");
+
+         if (updates.isEmpty()) {
+               System.out.println("No updates were provided.");
+               return;
+         }
+
+         String updateQuery = "UPDATE TrackingInfo SET " + String.join(", ", updates) + ", lastUpdateDate = CURRENT_TIMESTAMP WHERE trackingID = ?";
+         PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
+         pstmt.setString(1, trackingID);
+
+         int rowsUpdated = pstmt.executeUpdate();
+         if (rowsUpdated > 0) {
+               System.out.println("Tracking information updated successfully.");
+         } else {
+               System.out.println("Tracking information update failed.");
+         }
+
+         pstmt.close();
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
+
    
    public static void updateCatalog(GameRental esql, String authorisedUser) {
     try {
