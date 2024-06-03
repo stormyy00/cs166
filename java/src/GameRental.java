@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.lang.Math;
 import java.sql.PreparedStatement;
+import java.util.UUID;
+import java.util.Calendar;
+import java.sql.Timestamp;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -293,7 +296,7 @@ public class GameRental {
                    case 1: viewProfile(esql, authorisedUser); break;
                    case 2: authorisedUser = updateProfile(esql, authorisedUser); break;
                    case 3: viewCatalog(esql); break;
-                   case 4: placeOrder(esql); break;
+                   case 4: placeOrder(esql, authorisedUser); break;
                    case 5: viewAllOrders(esql); break;
                    case 6: viewRecentOrders(esql); break;
                    case 7: viewOrderInfo(esql); break;
@@ -565,54 +568,92 @@ public class GameRental {
         System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
     }
 
-   public static void placeOrder(GameRental esql) {
+   public static void placeOrder(GameRental esql, String authorisedUser) {
       try {
-         List<Integer> gameIDs = new ArrayList<>();
+         List<String> gameIDs = new ArrayList<>();
          List<Integer> unitsOrdered = new ArrayList<>();
          double totalPrice = 0.0;
 
          while (true) {
-            System.out.println("Enter the game ID to rent:");
-            String input = in.readLine();
+               System.out.println("Enter the game ID to rent (or type 'done' to finish):");
+               String gameID = in.readLine();
 
-            int gameID = Integer.parseInt(input);
-            System.out.println("Enter the number of units for game ID " + gameID + ":");
-            int units = Integer.parseInt(in.readLine());
+               if (gameID.equalsIgnoreCase("done")) {
+                  break;
+               }
 
-            
-            String priceQuery = String.format("SELECT price FROM Catalog WHERE gameID = %d", gameID);
-            List<List<String>> result = esql.executeQueryAndReturnResult(priceQuery);
-            if (result.isEmpty()) {
-               System.out.println("Game ID " + gameID + " not found in catalog.");
-               continue;
-            }
+               System.out.println("Enter the number of units for game ID " + gameID + ":");
+               int units = Integer.parseInt(in.readLine());
 
-            double price = Double.parseDouble(result.get(0).get(0));
-            totalPrice += price * units;
+               String priceQuery = String.format("SELECT price FROM Catalog WHERE gameID = '%s'", gameID);
+               List<List<String>> result = esql.executeQueryAndReturnResult(priceQuery);
+               if (result.isEmpty()) {
+                  System.out.println("Game ID " + gameID + " not found in catalog.");
+                  continue;
+               }
+               double price = Double.parseDouble(result.get(0).get(0));
+               totalPrice += price * units;
 
-            gameIDs.add(gameID);
-            unitsOrdered.add(units);
+               gameIDs.add(gameID);
+               unitsOrdered.add(units);
          }
 
          if (gameIDs.isEmpty()) {
-            System.out.println("No games ordered.");
-            return;
+               System.out.println("No games selected for rental. Order cancelled.");
+               return;
          }
 
          System.out.println("Total price of rental order: $" + totalPrice);
 
-         // After placing the rental order, the rental order
-         // information needs to be inserted in the RentalOrder table with a unique rentalOrderID.
-         // Each gameID, rentalOrderID, and the unitsOrdered should be inserted into
-         // GamesInOrder for every game in the order. Also, a TrackingInfo record with a unique
-         // trackingID should be created for the order.
+         String rentalOrderID = UUID.randomUUID().toString();
+         Timestamp orderTimestamp = new Timestamp(System.currentTimeMillis());
+         Calendar cal = Calendar.getInstance();
+         cal.setTime(orderTimestamp);
+         cal.add(Calendar.DATE, 7);
+         Timestamp dueDate = new Timestamp(cal.getTimeInMillis());
 
-         // need to implement ^
+         String insertOrderQuery = "INSERT INTO RentalOrder (rentalOrderID, login, noOfGames, totalPrice, orderTimestamp, dueDate) VALUES (?, ?, ?, ?, ?, ?)";
+         PreparedStatement insertOrderStmt = esql._connection.prepareStatement(insertOrderQuery);
+         insertOrderStmt.setString(1, rentalOrderID);
+         insertOrderStmt.setString(2, authorisedUser);
+         insertOrderStmt.setInt(3, gameIDs.size());
+         insertOrderStmt.setDouble(4, totalPrice);
+         insertOrderStmt.setTimestamp(5, orderTimestamp);
+         insertOrderStmt.setTimestamp(6, dueDate);
+         insertOrderStmt.executeUpdate();
+         insertOrderStmt.close();
+
+         String insertGameQuery = "INSERT INTO GamesInOrder (rentalOrderID, gameID, unitsOrdered) VALUES (?, ?, ?)";
+         PreparedStatement insertGameStmt = esql._connection.prepareStatement(insertGameQuery);
+         for (int i = 0; i < gameIDs.size(); i++) {
+               insertGameStmt.setString(1, rentalOrderID);
+               insertGameStmt.setString(2, gameIDs.get(i));
+               insertGameStmt.setInt(3, unitsOrdered.get(i));
+               insertGameStmt.addBatch();
+         }
+         insertGameStmt.executeBatch();
+         insertGameStmt.close();
+
+         String trackingID = UUID.randomUUID().toString();
+
+         String insertTrackingQuery = "INSERT INTO TrackingInfo (trackingID, rentalOrderID, status, currentLocation, courierName, lastUpdateDate) VALUES (?, ?, 'Pending', 'Warehouse', 'CourierName', ?)";
+         PreparedStatement insertTrackingStmt = esql._connection.prepareStatement(insertTrackingQuery);
+         insertTrackingStmt.setString(1, trackingID);
+         insertTrackingStmt.setString(2, rentalOrderID);
+         insertTrackingStmt.setTimestamp(3, orderTimestamp);
+         insertTrackingStmt.executeUpdate();
+         insertTrackingStmt.close();
+
+         System.out.println("Rental order placed successfully with Order ID: " + rentalOrderID);
+         System.out.println("Tracking ID: " + trackingID);
 
       } catch (Exception e) {
-         System.err.println(e.getMessage());
+         System.err.println("Error: " + e.getMessage());
       }
    }
+
+
+
 
    public static void viewAllOrders(GameRental esql) {
       try{
