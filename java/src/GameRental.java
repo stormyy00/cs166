@@ -750,24 +750,44 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
    public static void viewTrackingInfo(GameRental esql) {
       try {
-         System.out.println("Enter your user login:");
-         String userLogin = in.readLine();
+            System.out.println("Enter your user login:");
+            String userLogin = in.readLine();
 
-         System.out.println("Enter the Tracking ID:");
-         String trackingID = in.readLine();
+            String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", userLogin);
+            List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
+            if (roleResult.isEmpty()) {
+               System.out.println("User not found.");
+               return;
+            }
 
-         String query = String.format(
-               "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
-               "FROM TrackingInfo T, RentalOrder R " +
-               "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
-               trackingID, userLogin
-         );
+            System.out.println("Enter the Tracking ID:");
+            String trackingID = in.readLine();
 
-         List<List<String>> result = esql.executeQueryAndReturnResult(query);
+            String query;
+            if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager") || roleResult.get(0).get(0).trim().equalsIgnoreCase("employee")) {
+               System.out.println("Enter the rentalOrder login of the user:");
+               String rentalOrderLogin = in.readLine();
 
-         if (result.isEmpty()) {
+               query = String.format(
+                        "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
+                              "FROM TrackingInfo T, RentalOrder R " +
+                              "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
+                        trackingID, rentalOrderLogin
+               );
+            } else {
+               query = String.format(
+                        "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
+                              "FROM TrackingInfo T, RentalOrder R " +
+                              "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
+                        trackingID, userLogin
+               );
+            }
+
+            List<List<String>> result = esql.executeQueryAndReturnResult(query);
+
+            if (result.isEmpty()) {
                System.out.println("No tracking information found.");
-         } else {
+            } else {
                System.out.println("===========================");
                System.out.println("Tracking Information");
                System.out.println("===========================");
@@ -780,9 +800,9 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
                   System.out.println("Last Updated Date: " + row.get(5));
                   System.out.println("Additional Comments: " + row.get(6));
                }
-         }
+            }
       } catch (Exception e) {
-         System.err.println(e.getMessage());
+            System.err.println(e.getMessage());
       }
    }
 
