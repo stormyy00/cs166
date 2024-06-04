@@ -298,7 +298,7 @@ public class GameRental {
                    case 3: viewCatalog(esql); break;
                    case 4: placeOrder(esql, authorisedUser); break;
                    case 5: viewAllOrders(esql, authorisedUser); break;
-                   case 6: viewRecentOrders(esql); break;
+                   case 6: viewRecentOrders(esql, authorisedUser); break;
                    case 7: viewOrderInfo(esql, authorisedUser); break;
                    case 8: viewTrackingInfo(esql); break;
                    case 9: updateTrackingInfo(esql, authorisedUser); break;
@@ -719,22 +719,39 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
       }
    }
 
-   public static void viewRecentOrders(GameRental esql) {
+   public static void viewRecentOrders(GameRental esql, String authorizedUser) {
       try {
-         
-         System.out.println("Enter your user login:");
-         String userLogin = in.readLine();
+         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
+         List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
+         if (roleResult.isEmpty()) {
+               System.out.println("User not found.");
+               return;
+         }
 
-         
-         String query = String.format(
-               "SELECT R.rentalOrderID, R.orderTimestamp, R.dueDate, R.totalPrice, R.noOfGames, T.trackingID " +
-               "FROM RentalOrder R " +
-               "LEFT JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
-               "WHERE R.login = '%s' " +
-               "ORDER BY R.orderTimestamp DESC " +
-               "LIMIT 5",
-               userLogin
-         );
+         String query;
+         if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("Enter the user login to view their recent 5 orders:");
+               String userLogin = in.readLine();
+               query = String.format(
+                  "SELECT R.rentalOrderID, R.orderTimestamp, R.dueDate, R.totalPrice, R.noOfGames, T.trackingID " +
+                  "FROM RentalOrder R " +
+                  "LEFT JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+                  "WHERE R.login = '%s' " +
+                  "ORDER BY R.orderTimestamp DESC " +
+                  "LIMIT 5",
+                  userLogin
+               );
+         } else {
+               query = String.format(
+                  "SELECT R.rentalOrderID, R.orderTimestamp, R.dueDate, R.totalPrice, R.noOfGames, T.trackingID " +
+                  "FROM RentalOrder R " +
+                  "LEFT JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+                  "WHERE R.login = '%s' " +
+                  "ORDER BY R.orderTimestamp DESC " +
+                  "LIMIT 5",
+                  authorizedUser
+               );
+         }
 
          List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
@@ -748,7 +765,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
                   System.out.println("Rental Order ID: " + row.get(0));
                   System.out.println("Order Timestamp: " + row.get(1));
                   System.out.println("Due Date: " + row.get(2));
-                  System.out.println("Total Price: " + row.get(3));
+                  System.out.println("Total Price: $" + row.get(3));
                   System.out.println("Number of Games: " + row.get(4));
                   System.out.println("Tracking ID: " + row.get(5));
                   System.out.println("---------------------------");
@@ -758,6 +775,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
          System.err.println(e.getMessage());
       }
    }
+
 
 
    public static void viewOrderInfo(GameRental esql, String authorizedUser) {
