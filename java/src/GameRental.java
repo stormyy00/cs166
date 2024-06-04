@@ -675,16 +675,47 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
          System.err.println (e.getMessage());
       }
    }
-   public static void viewRecentOrders(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This views recent orderse");
 
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+   public static void viewRecentOrders(GameRental esql) {
+      try {
+         
+         System.out.println("Enter your user login:");
+         String userLogin = in.readLine();
+
+         
+         String query = String.format(
+               "SELECT R.rentalOrderID, R.orderTimestamp, R.dueDate, R.totalPrice, R.noOfGames, T.trackingID " +
+               "FROM RentalOrder R " +
+               "LEFT JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+               "WHERE R.login = '%s' " +
+               "ORDER BY R.orderTimestamp DESC " +
+               "LIMIT 5",
+               userLogin
+         );
+
+         List<List<String>> result = esql.executeQueryAndReturnResult(query);
+
+         if (result.isEmpty()) {
+               System.out.println("No recent orders found.");
+         } else {
+               System.out.println("===========================");
+               System.out.println("Recent Orders");
+               System.out.println("===========================");
+               for (List<String> row : result) {
+                  System.out.println("Rental Order ID: " + row.get(0));
+                  System.out.println("Order Timestamp: " + row.get(1));
+                  System.out.println("Due Date: " + row.get(2));
+                  System.out.println("Total Price: " + row.get(3));
+                  System.out.println("Number of Games: " + row.get(4));
+                  System.out.println("Tracking ID: " + row.get(5));
+                  System.out.println("---------------------------");
+               }
+         }
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
+
 
    public static void viewOrderInfo(GameRental esql, String authorisedUser) {
       try {
