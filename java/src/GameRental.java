@@ -297,7 +297,7 @@ public class GameRental {
                    case 2: authorisedUser = updateProfile(esql, authorisedUser); break;
                    case 3: viewCatalog(esql); break;
                    case 4: placeOrder(esql, authorisedUser); break;
-                   case 5: viewAllOrders(esql); break;
+                   case 5: viewAllOrders(esql, authorisedUser); break;
                    case 6: viewRecentOrders(esql); break;
                    case 7: viewOrderInfo(esql, authorisedUser); break;
                    case 8: viewTrackingInfo(esql); break;
@@ -660,19 +660,62 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
 
 
+   public static void viewAllOrders(GameRental esql, String authorisedUser) {
+      try {
+         
+         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorisedUser);
+         List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
+         if (roleResult.isEmpty()) {
+               System.out.println("User not found.");
+               return;
+         }
 
+        
+         String query;
+         if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("Enter the rentalOrder login of the user:");
+               String rentalOrderLogin = in.readLine();
+               query = "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
+                        "FROM RentalOrder R " +
+                        "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+                        "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
+                        "WHERE R.login = '" + rentalOrderLogin + "'";
+         } else {
+               query = String.format(
+                     "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
+                              "FROM RentalOrder R " +
+                              "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+                              "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
+                              "WHERE R.login = '%s'",
+                     authorisedUser
+               );
+         }
 
+         
+         List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
+        
+         if (result.isEmpty()) {
+               System.out.println("No rental history orders found.");
+               return;
+         }
 
+         
+         System.out.println("Order History:");
+         System.out.println("==================");
 
-   public static void viewAllOrders(GameRental esql) {
-      try{
-       String query = "";
-         System.out.println("This views all orders");
-
-       
-      }catch(Exception e){
-         System.err.println (e.getMessage());
+         
+         for (List<String> row : result) {
+               System.out.println("Order Timestamp: " + row.get(0));
+               System.out.println("Due Date: " + row.get(1));
+               System.out.println("Total Price: $" + row.get(2));
+               System.out.println("Tracking ID: " + row.get(3));
+               System.out.println("Game ID: " + row.get(4));
+               System.out.println("Units Ordered: " + row.get(5));
+               System.out.println("------------------");
+         }
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
       }
    }
 
@@ -717,51 +760,52 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
    }
 
 
-   public static void viewOrderInfo(GameRental esql, String authorisedUser) {
+   public static void viewOrderInfo(GameRental esql, String authorizedUser) {
       try {
          
-         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorisedUser);
+         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
                System.out.println("User not found.");
                return;
          }
 
-        
+         System.out.println("Enter the rental order ID:");
+         String rentalOrderID = in.readLine();
+
          String query;
          if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
                System.out.println("Enter the rentalOrder login of the user:");
                String rentalOrderLogin = in.readLine();
-               query = "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
-                        "FROM RentalOrder R " +
-                        "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
-                        "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
-                        "WHERE R.login = '" + rentalOrderLogin + "'";
+               query = String.format(
+                  "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
+                  "FROM RentalOrder R " +
+                  "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+                  "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
+                  "WHERE R.rentalOrderID = '%s' AND R.login = '%s'",
+                  rentalOrderID, rentalOrderLogin
+               );
          } else {
                query = String.format(
-                     "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
-                              "FROM RentalOrder R " +
-                              "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
-                              "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
-                              "WHERE R.login = '%s'",
-                     authorisedUser
+                  "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
+                  "FROM RentalOrder R " +
+                  "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
+                  "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
+                  "WHERE R.rentalOrderID = '%s' AND R.login = '%s'",
+                  rentalOrderID, authorizedUser
                );
          }
 
-         
          List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
-        
          if (result.isEmpty()) {
                System.out.println("No rental orders found.");
                return;
          }
 
-         
          System.out.println("Order Information:");
          System.out.println("==================");
 
-         
          for (List<String> row : result) {
                System.out.println("Order Timestamp: " + row.get(0));
                System.out.println("Due Date: " + row.get(1));
@@ -775,6 +819,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
          System.err.println(e.getMessage());
       }
    }
+
 
 
 
