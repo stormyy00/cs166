@@ -506,27 +506,39 @@ public class GameRental {
             case 1:
                   System.out.println("Enter the GameID:");
                   String gameId = in.readLine();
-                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE gameID = '%s';", gameId);
+                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE gameID = '%s'", gameId);
                   break;
             case 2:
                   System.out.println("Enter the Genre:");
                   String genre = in.readLine();
-                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE genre = '%s';", genre);
+                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE genre = '%s'", genre);
                   break;
             case 3:
                   System.out.println("Enter the Price:");
                   String price = in.readLine();
-                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE price = '%s';", price);
+                  query = String.format("SELECT gameName, genre, price FROM Catalog WHERE price = '%s'", price);
                   break;
             default:
                   System.out.println("Invalid criteria. Please enter 'gameID', 'genre', or 'price'.");
                   return; // Exit the method if the criteria is invalid
          }
-         System.out.println("Do you want to sort the results? Enter 'asc' for ascending, 'desc' for descending, or 'none' for no sorting:");
-         String sortChoice = in.readLine().trim().toLowerCase();;
-         
+         System.out.println("Do you want to sort the results? Enter\n 1. for View Highest Price\n 2. View Lowest Price \n 3. for no sorting:");
+         int choice = readChoice();
+         String sortChoice = "";
+         switch (choice){
+            case 1:
+                sortChoice = "ASC";
+                break;
+            case 2:
+                sortChoice = "DESC";
+                break;
+            case 3:
+               sortChoice = "none";
+               break;
+         } 
+
          if (sortChoice.equals("asc") || sortChoice.equals("desc")) {
-            query += String.format(" ORDER BY price %s", sortChoice.toUpperCase()); // Assuming sorting by price for demonstration
+            query += String.format(" ORDER BY price %s;", sortChoice.toUpperCase()); // Specify sorting by price in the correct syntax
          } else if (!sortChoice.equals("none")) {
             System.out.println("Results will be displayed without sorting.");
          }
