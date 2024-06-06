@@ -614,7 +614,10 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
             System.out.println("No games selected for rental. Order cancelled.");
             return;
         }
-
+      //   System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
+        System.out.println("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅");
+        System.out.println("Order has been placed\t");
+        System.out.println("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅");
         System.out.println("Total price of rental order: $" + totalPrice);
 
         
@@ -724,7 +727,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
                System.out.println("Tracking ID: " + row.get(3));
                System.out.println("Game ID: " + row.get(4));
                System.out.println("Units Ordered: " + row.get(5));
-               System.out.println("------------------");
+               System.out.println("------------------------------------");
          }
       } catch (Exception e) {
          System.err.println(e.getMessage());
@@ -994,10 +997,12 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
         List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
-        if (userRole.isEmpty() || !userRole.get(0).get(0).equalsIgnoreCase("manager")) {
-            System.out.println("Only managers are allowed to update the catalog.");
-            return;
-        }
+        if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+               System.out.println("Only managers are allowed to update user information.");
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+               return;
+         }
 
         System.out.println("This updates catalog");
 
@@ -1065,7 +1070,9 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
          }
 
          if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                System.out.println("Only managers are allowed to update user information.");
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                return;
          }
 
@@ -1112,9 +1119,9 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
          int rowsUpdated = pstmt.executeUpdate();
          if (rowsUpdated > 0) {
-               System.out.println("User updated successfully.");
+               System.out.println("✅User updated successfully.");
          } else {
-               System.out.println("User update failed.");
+               System.out.println("❌User update failed.");
          }
 
          pstmt.close();
