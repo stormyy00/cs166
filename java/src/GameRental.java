@@ -262,14 +262,14 @@ public class GameRental {
             System.out.println("1. Create user");
             System.out.println("2. Log in");
             System.out.println("9. < EXIT");
-            String authorisedUser = null;
+            String authorizedUser = null;
             switch (readChoice()){
                case 1: CreateUser(esql); break;
-               case 2: authorisedUser = LogIn(esql); break;
+               case 2: authorizedUser = LogIn(esql); break;
                case 9: keepon = false; break;
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
-            if (authorisedUser != null) {
+            if (authorizedUser != null) {
               boolean usermenu = true;
               while(usermenu) {
                 System.out.println("MAIN MENU");
@@ -293,17 +293,17 @@ public class GameRental {
                 System.out.println(".........................");
                 System.out.println("20. Log out");
                 switch (readChoice()){
-                   case 1: viewProfile(esql, authorisedUser); break;
-                   case 2: authorisedUser = updateProfile(esql, authorisedUser); break;
+                   case 1: viewProfile(esql, authorizedUser); break;
+                   case 2: authorizedUser = updateProfile(esql, authorizedUser); break;
                    case 3: viewCatalog(esql); break;
-                   case 4: placeOrder(esql, authorisedUser); break;
-                   case 5: viewAllOrders(esql, authorisedUser); break;
-                   case 6: viewRecentOrders(esql, authorisedUser); break;
-                   case 7: viewOrderInfo(esql, authorisedUser); break;
-                   case 8: viewTrackingInfo(esql); break;
-                   case 9: updateTrackingInfo(esql, authorisedUser); break;
-                   case 10: updateCatalog(esql, authorisedUser); break;
-                   case 11: updateUser(esql, authorisedUser); break;
+                   case 4: placeOrder(esql, authorizedUser); break;
+                   case 5: viewAllOrders(esql, authorizedUser); break;
+                   case 6: viewRecentOrders(esql, authorizedUser); break;
+                   case 7: viewOrderInfo(esql, authorizedUser); break;
+                   case 8: viewTrackingInfo(esql, authorizedUser); break;
+                   case 9: updateTrackingInfo(esql, authorizedUser); break;
+                   case 10: updateCatalog(esql, authorizedUser); break;
+                   case 11: updateUser(esql, authorizedUser); break;
 
 
 
@@ -407,49 +407,79 @@ public class GameRental {
 
 // Rest of the functions definition go in here
 
-   public static void viewProfile(GameRental esql, String authorisedUser) {
-        try {
+   public static void viewProfile(GameRental esql, String authorizedUser) {
+      try {
+         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
+         List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
+         if (roleResult.isEmpty()) {
+               System.out.println("User not found.");
+               return;
+         }
 
-            String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorisedUser);
-            List<List<String>> profile = esql.executeQueryAndReturnResult(query);
+         if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
+               System.out.println("Enter the login of the user:");
+               String userLogin = in.readLine();
 
-            if (!profile.isEmpty()) {
+               String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM Users WHERE login = '%s'", userLogin);
+               List<List<String>> profile = esql.executeQueryAndReturnResult(query);
 
-                System.out.println("===========================");
-                System.out.println("\tUser Profile");
-                System.out.println("===========================");
-                for (List<String> row : profile) {
-                    System.out.println("Name: " + row.get(0));
-                    System.out.println("Password: " + row.get(1));
-                    System.out.println("Role: " + row.get(2));
-                    System.out.println("Favorite Games: " + row.get(3));
-                    System.out.println("Phone Number: " + row.get(4));
-                    System.out.println("Overdue Games: " + row.get(5));
-                }
-            } else {
-                System.out.println("No user found with the login: " + authorisedUser);
-            }
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
+               if (!profile.isEmpty()) {
+                  System.out.println("===========================");
+                  System.out.println("\tUser Profile");
+                  System.out.println("===========================");
+                  for (List<String> row : profile) {
+                     System.out.println("Name: " + row.get(0));
+                     System.out.println("Password: " + row.get(1));
+                     System.out.println("Role: " + row.get(2));
+                     System.out.println("Favorite Games: " + row.get(3));
+                     System.out.println("Phone Number: " + row.get(4));
+                     System.out.println("Overdue Games: " + row.get(5));
+                  }
+               } else {
+                  System.out.println("No user found with the login: " + userLogin);
+               }
+         } else {
+               String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM Users WHERE login = '%s'", authorizedUser);
+               List<List<String>> profile = esql.executeQueryAndReturnResult(query);
+
+               if (!profile.isEmpty()) {
+                  System.out.println("===========================");
+                  System.out.println("\tUser Profile");
+                  System.out.println("===========================");
+                  for (List<String> row : profile) {
+                     System.out.println("Name: " + row.get(0));
+                     System.out.println("Password: " + row.get(1));
+                     System.out.println("Role: " + row.get(2));
+                     System.out.println("Favorite Games: " + row.get(3));
+                     System.out.println("Phone Number: " + row.get(4));
+                     System.out.println("Overdue Games: " + row.get(5));
+                  }
+               } else {
+                  System.out.println("No user found with the login: " + authorizedUser);
+               }
+         }
+      } catch (Exception e) {
+         System.err.println(e.getMessage());
+      }
    }
 
-   public static String updateProfile(GameRental esql, String authorisedUser) {
+
+   public static String updateProfile(GameRental esql, String authorizedUser) {
     try {
         System.out.println("This updates profile");
 
         
         String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
         PreparedStatement checkUserStmt = esql._connection.prepareStatement(checkUserQuery);
-        checkUserStmt.setString(1, authorisedUser);
+        checkUserStmt.setString(1, authorizedUser);
         ResultSet rs = checkUserStmt.executeQuery();
         rs.next();
         int userCount = rs.getInt(1);
         checkUserStmt.close();
 
         if (userCount == 0) {
-            System.out.println("No user found with the login: " + authorisedUser);
-            return authorisedUser;
+            System.out.println("No user found with the login: " + authorizedUser);
+            return authorizedUser;
         }
 
         System.out.println("Enter the new login:");
@@ -469,18 +499,18 @@ public class GameRental {
 
         if (updates.isEmpty()) {
             System.out.println("No updates were provided.");
-            return authorisedUser;
+            return authorizedUser;
         }
 
         String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
         PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
-        pstmt.setString(1, authorisedUser);
+        pstmt.setString(1, authorizedUser);
 
         int rowsUpdated = pstmt.executeUpdate();
         if (rowsUpdated > 0) {
             System.out.println("Profile updated successfully.");
             if (!login.isEmpty()) {
-                authorisedUser = login;
+                authorizedUser = login;
             }
         } else {
             System.out.println("Profile update failed.");
@@ -490,7 +520,7 @@ public class GameRental {
       } catch (Exception e) {
          System.err.println(e.getMessage());
       }
-      return authorisedUser;
+      return authorizedUser;
    }
 
 
@@ -580,7 +610,7 @@ public class GameRental {
         System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
     }
 
-public static void placeOrder(GameRental esql, String authorisedUser) {
+public static void placeOrder(GameRental esql, String authorizedUser) {
     try {
         List<String> gameIDs = new ArrayList<>();
         List<Integer> unitsOrdered = new ArrayList<>();
@@ -632,7 +662,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
         String insertOrderQuery = "INSERT INTO RentalOrder (rentalOrderID, login, noOfGames, totalPrice, orderTimestamp, dueDate) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement insertOrderStmt = esql._connection.prepareStatement(insertOrderQuery);
         insertOrderStmt.setString(1, rentalOrderID);
-        insertOrderStmt.setString(2, authorisedUser);
+        insertOrderStmt.setString(2, authorizedUser);
         insertOrderStmt.setInt(3, gameIDs.size());
         insertOrderStmt.setDouble(4, totalPrice);
         insertOrderStmt.setTimestamp(5, orderTimestamp);
@@ -660,7 +690,11 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
         PreparedStatement insertTrackingStmt = esql._connection.prepareStatement(insertTrackingQuery);
         insertTrackingStmt.setString(1, trackingID);
         insertTrackingStmt.setString(2, rentalOrderID);
-        insertTrackingStmt.setTimestamp(3, orderTimestamp);
+        insertTrackingStmt.setString(3, "Ordered");
+        insertTrackingStmt.setString(4, "Warehouse");
+        insertTrackingStmt.setString(5, "Riverside, CA");
+        insertTrackingStmt.setTimestamp(6, orderTimestamp);
+      
         insertTrackingStmt.executeUpdate();
         insertTrackingStmt.close();
 
@@ -675,10 +709,10 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
 
 
-   public static void viewAllOrders(GameRental esql, String authorisedUser) {
+   public static void viewAllOrders(GameRental esql, String authorizedUser) {
       try {
          
-         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorisedUser);
+         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
                System.out.println("User not found.");
@@ -688,13 +722,13 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
         
          String query;
          if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
-               System.out.println("Enter the rentalOrder login of the user:");
-               String rentalOrderLogin = in.readLine();
+               System.out.println("Enter the login of the user:");
+               String userLogin = in.readLine();
                query = "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
                         "FROM RentalOrder R " +
                         "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
                         "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
-                        "WHERE R.login = '" + rentalOrderLogin + "'";
+                        "WHERE R.login = '" + userLogin + "'";
          } else {
                query = String.format(
                      "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
@@ -702,7 +736,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
                               "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
                               "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
                               "WHERE R.login = '%s'",
-                     authorisedUser
+                     authorizedUser
                );
          }
 
@@ -745,7 +779,7 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
          String query;
          if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
-               System.out.println("Enter the user login to view their recent 5 orders:");
+               System.out.println("Enter the login of the user to view their recent 5 orders:");
                String userLogin = in.readLine();
                query = String.format(
                   "SELECT R.rentalOrderID, R.orderTimestamp, R.dueDate, R.totalPrice, R.noOfGames, T.trackingID " +
@@ -808,15 +842,15 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
          String query;
          if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager")) {
-               System.out.println("Enter the rentalOrder login of the user:");
-               String rentalOrderLogin = in.readLine();
+               System.out.println("Enter the login of the user:");
+               String userLogin = in.readLine();
                query = String.format(
                   "SELECT R.orderTimestamp, R.dueDate, R.totalPrice, T.trackingID, G.gameID, G.unitsOrdered " +
                   "FROM RentalOrder R " +
                   "JOIN TrackingInfo T ON R.rentalOrderID = T.rentalOrderID " +
                   "JOIN GamesInOrder G ON R.rentalOrderID = G.rentalOrderID " +
                   "WHERE R.rentalOrderID = '%s' AND R.login = '%s'",
-                  rentalOrderID, rentalOrderLogin
+                  rentalOrderID, userLogin
                );
          } else {
                query = String.format(
@@ -857,46 +891,43 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
 
 
-   public static void viewTrackingInfo(GameRental esql) {
+   public static void viewTrackingInfo(GameRental esql, String authorizedUser) {
       try {
-            System.out.println("Enter your user login:");
-            String userLogin = in.readLine();
-
-            String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", userLogin);
-            List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
-            if (roleResult.isEmpty()) {
+         String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
+         List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
+         if (roleResult.isEmpty()) {
                System.out.println("User not found.");
                return;
-            }
+         }
 
-            System.out.println("Enter the Tracking ID:");
-            String trackingID = in.readLine();
+         System.out.println("Enter the Tracking ID:");
+         String trackingID = in.readLine();
 
-            String query;
-            if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager") || roleResult.get(0).get(0).trim().equalsIgnoreCase("employee")) {
-               System.out.println("Enter the rentalOrder login of the user:");
-               String rentalOrderLogin = in.readLine();
+         String query;
+         if (roleResult.get(0).get(0).trim().equalsIgnoreCase("manager") || roleResult.get(0).get(0).trim().equalsIgnoreCase("employee")) {
+               System.out.println("Enter the login of the user:");
+               String userLogin = in.readLine();
 
                query = String.format(
-                        "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
-                              "FROM TrackingInfo T, RentalOrder R " +
-                              "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
-                        trackingID, rentalOrderLogin
+                  "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
+                  "FROM TrackingInfo T, RentalOrder R " +
+                  "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
+                  trackingID, userLogin
                );
-            } else {
+         } else {
                query = String.format(
-                        "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
-                              "FROM TrackingInfo T, RentalOrder R " +
-                              "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
-                        trackingID, userLogin
+                  "SELECT T.trackingID, T.courierName, T.rentalOrderID, T.currentLocation, T.status, T.lastUpdateDate, T.additionalComments " +
+                  "FROM TrackingInfo T, RentalOrder R " +
+                  "WHERE T.trackingID = '%s' AND T.rentalOrderID = R.rentalOrderID AND R.login = '%s'",
+                  trackingID, authorizedUser
                );
-            }
+         }
 
-            List<List<String>> result = esql.executeQueryAndReturnResult(query);
+         List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
-            if (result.isEmpty()) {
+         if (result.isEmpty()) {
                System.out.println("No tracking information found.");
-            } else {
+         } else {
                System.out.println("===========================");
                System.out.println("Tracking Information");
                System.out.println("===========================");
@@ -909,19 +940,20 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
                   System.out.println("Last Updated Date: " + row.get(5));
                   System.out.println("Additional Comments: " + row.get(6));
                }
-            }
+         }
       } catch (Exception e) {
-            System.err.println(e.getMessage());
+         System.err.println(e.getMessage());
       }
    }
 
-   public static void updateTrackingInfo(GameRental esql, String authorisedUser) {
+
+   public static void updateTrackingInfo(GameRental esql, String authorizedUser) {
       try {
-         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorizedUser);
          List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
          if (userRole.isEmpty()) {
-               System.out.println("No user found with the login: " + authorisedUser);
+               System.out.println("No user found with the login: " + authorizedUser);
                return;
          } else {
                System.out.println("User role: " + userRole.get(0).get(0).trim());
@@ -991,10 +1023,10 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
 
 
    
-   public static void updateCatalog(GameRental esql, String authorisedUser) {
+   public static void updateCatalog(GameRental esql, String authorizedUser) {
     try {
         
-        String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+        String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorizedUser);
         List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
         if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
@@ -1056,14 +1088,14 @@ public static void placeOrder(GameRental esql, String authorisedUser) {
    }
 
 
-   public static void updateUser(GameRental esql, String authorisedUser) {
+   public static void updateUser(GameRental esql, String authorizedUser) {
       try {
         
-         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorisedUser);
+         String roleQuery = String.format("SELECT role FROM users WHERE login = '%s'", authorizedUser);
          List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
          if (userRole.isEmpty()) {
-               System.out.println("No user found with the login: " + authorisedUser);
+               System.out.println("No user found with the login: " + authorizedUser);
                return;
          } else {
                System.out.println("User role: " + userRole.get(0).get(0).trim());
