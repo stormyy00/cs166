@@ -365,8 +365,8 @@ public class GameRental {
          String name = in.readLine();
          System.out.println("\tEnter password: ");
          String pwd = in.readLine();
-         System.out.println("\tEnter role: ");
-         String role = in.readLine();
+         // System.out.println("\tEnter role: ");
+         String role = "customer";
          System.out.println("\tEnter favorite game: ");
          String favGames = in.readLine();
          System.out.println("\tEnter phone number ");
@@ -568,8 +568,9 @@ public class GameRental {
                break;
          } 
 
-         if (sortChoice.equals("asc") || sortChoice.equals("desc")) {
-            query += String.format(" ORDER BY price %s;", sortChoice.toUpperCase()); // Specify sorting by price in the correct syntax
+         if (sortChoice.equals("ASC") || sortChoice.equals("DESC")) {
+            query += String.format(" ORDER BY price %s;", sortChoice.toUpperCase()); 
+            System.out.println(query);// Specify sorting by price in the correct syntax
          } else if (!sortChoice.equals("none")) {
             System.out.println("Results will be displayed without sorting.");
          }
