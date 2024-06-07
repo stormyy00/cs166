@@ -375,10 +375,10 @@ public class GameRental {
          String query = String.format("INSERT INTO Users (login, password, role, favGames, phoneNum, numOverDueGames) VALUES ('%s', '%s', '%s', '%s', '%s', 0)", name, pwd, role, favGames, num);
 
          esql.executeUpdate(query);
-         System.out.println("User successfully created!");
+         System.out.println("✅User successfully created!");
 
       }catch (Exception e){
-         System.err.println (e.getMessage ());
+         System.err.println ("❌"+e.getMessage ());
       }
    }//end CreateUser
 
@@ -396,11 +396,12 @@ public class GameRental {
 
          String query = String.format("SELECT login FROM USERS WHERE login = '%s' AND password = '%s'", login, pwd);
          List<List<String>> userID = esql.executeQueryAndReturnResult(query);
+         System.out.println("\n✅Login Sucess\n");
 	         if (userID.size() > 0)
 		         return userID.get(0).get(0);
             return null;
       }catch(Exception e){
-         System.err.println (e.getMessage ());
+         System.err.println ("❌"+e.getMessage ());
          return null;
       }
    }//end
@@ -412,7 +413,7 @@ public class GameRental {
          String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
-               System.out.println("User not found.");
+               System.out.println("❌User not found.");
                return;
          }
 
@@ -436,7 +437,7 @@ public class GameRental {
                      System.out.println("Overdue Games: " + row.get(5));
                   }
                } else {
-                  System.out.println("No user found with the login: " + userLogin);
+                  System.out.println("❌No user found with the login: " + userLogin);
                }
          } else {
                String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM Users WHERE login = '%s'", authorizedUser);
@@ -455,7 +456,7 @@ public class GameRental {
                      System.out.println("Overdue Games: " + row.get(5));
                   }
                } else {
-                  System.out.println("No user found with the login: " + authorizedUser);
+                  System.out.println("❌No user found with the login: " + authorizedUser);
                }
          }
       } catch (Exception e) {
@@ -508,12 +509,12 @@ public class GameRental {
 
         int rowsUpdated = pstmt.executeUpdate();
         if (rowsUpdated > 0) {
-            System.out.println("Profile updated successfully.");
+            System.out.println("✅Profile updated successfully.");
             if (!login.isEmpty()) {
                 authorizedUser = login;
             }
         } else {
-            System.out.println("Profile update failed.");
+            System.out.println("❌Profile update failed.");
         }
 
          pstmt.close();
@@ -641,13 +642,13 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
         }
 
         if (gameIDs.isEmpty()) {
-            System.out.println("No games selected for rental. Order cancelled.");
+            System.out.println("❌No games selected for rental. Order cancelled.");
             return;
         }
       //   System.out.println("⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️");
-        System.out.println("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅");
+        System.out.println("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅");
         System.out.println("Order has been placed\t");
-        System.out.println("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅");
+        System.out.println("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅");
         System.out.println("Total price of rental order: $" + totalPrice);
 
         
@@ -702,7 +703,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
         System.out.println("Tracking ID: " + trackingID);
 
     } catch (Exception e) {
-        System.err.println("Error: " + e.getMessage());
+        System.err.println("❌Error: " + e.getMessage());
     }
 }
 
@@ -715,7 +716,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
-               System.out.println("User not found.");
+               System.out.println("❌User not found.");
                return;
          }
 
@@ -745,7 +746,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
 
         
          if (result.isEmpty()) {
-               System.out.println("No rental history orders found.");
+               System.out.println("❌No rental history orders found.");
                return;
          }
 
@@ -773,7 +774,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
-               System.out.println("User not found.");
+               System.out.println("❌User not found.");
                return;
          }
 
@@ -805,7 +806,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
          if (result.isEmpty()) {
-               System.out.println("No recent orders found.");
+               System.out.println("❌No recent orders found.");
          } else {
                System.out.println("===========================");
                System.out.println("Recent Orders");
@@ -833,7 +834,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
-               System.out.println("User not found.");
+               System.out.println("❌User not found.");
                return;
          }
 
@@ -866,7 +867,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          List<List<String>> result = esql.executeQueryAndReturnResult(query);
 
          if (result.isEmpty()) {
-               System.out.println("No rental orders found.");
+               System.out.println("❌No rental orders found.");
                return;
          }
 
@@ -896,7 +897,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          String roleQuery = String.format("SELECT role FROM Users WHERE login = '%s'", authorizedUser);
          List<List<String>> roleResult = esql.executeQueryAndReturnResult(roleQuery);
          if (roleResult.isEmpty()) {
-               System.out.println("User not found.");
+               System.out.println("❌User not found.");
                return;
          }
 
@@ -953,7 +954,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
          if (userRole.isEmpty()) {
-               System.out.println("No user found with the login: " + authorizedUser);
+               System.out.println("❌No user found with the login: " + authorizedUser);
                return;
          } else {
                System.out.println("User role: " + userRole.get(0).get(0).trim());
@@ -961,8 +962,10 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
 
          if (!userRole.get(0).get(0).trim().equalsIgnoreCase("employee") &&
                !userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
-               System.out.println("Only employees and managers are allowed to update tracking information.");
-               return;
+                  System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+                  System.out.println("Only employees and managers are allowed to update tracking information.");
+                  System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+                  return;
          }
 
          System.out.println("Enter the Tracking ID of the tracking information to update:");
@@ -1000,7 +1003,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          if (!additionalComments.isEmpty()) updates.add("additionalComments = '" + additionalComments + "'");
 
          if (updates.isEmpty()) {
-               System.out.println("No updates were provided.");
+               System.out.println("❌No updates were provided.");
                return;
          }
 
@@ -1010,9 +1013,9 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
 
          int rowsUpdated = pstmt.executeUpdate();
          if (rowsUpdated > 0) {
-               System.out.println("Tracking information updated successfully.");
+               System.out.println("✅✔️Tracking information updated successfully.");
          } else {
-               System.out.println("Tracking information update failed.");
+               System.out.println("❌Tracking information update failed.");
          }
 
          pstmt.close();
@@ -1030,13 +1033,13 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
         List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
         if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
-               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                System.out.println("Only managers are allowed to update user information.");
-               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                return;
          }
 
-        System.out.println("This updates catalog");
+        System.out.println("✅This updates catalog");
 
         
         System.out.println("Enter the Game ID to update:");
@@ -1065,14 +1068,14 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
                 Double price = Double.parseDouble(priceInput);
                 updates.add(String.format("price = %s", price));
             } catch (NumberFormatException e) {
-                System.out.println("Invalid price format.");
+                System.out.println("❌Invalid price format.");
                 return;
             }
         }
 
         
         if (updates.isEmpty()) {
-            System.out.println("No updates were provided.");
+            System.out.println("❌No updates were provided.");
             return;
         }
 
@@ -1080,7 +1083,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
 
         
         esql.executeUpdate(query);
-        System.out.println("Catalog updated successfully.");
+        System.out.println("✅Catalog updated successfully.");
 
       } catch (Exception e) {
          System.err.println(e.getMessage());
@@ -1095,16 +1098,16 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          List<List<String>> userRole = esql.executeQueryAndReturnResult(roleQuery);
 
          if (userRole.isEmpty()) {
-               System.out.println("No user found with the login: " + authorizedUser);
+               System.out.println("❌No user found with the login: " + authorizedUser);
                return;
          } else {
                System.out.println("User role: " + userRole.get(0).get(0).trim());
          }
 
          if (!userRole.get(0).get(0).trim().equalsIgnoreCase("manager")) {
-               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                System.out.println("Only managers are allowed to update user information.");
-               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+               System.out.println("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                return;
          }
 
@@ -1121,7 +1124,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          checkUserStmt.close();
 
          if (userCount == 0) {
-               System.out.println("No user found with the login: " + userLogin);
+               System.out.println("❌No user found with the login: " + userLogin);
                return;
          }
 
@@ -1141,7 +1144,7 @@ public static void placeOrder(GameRental esql, String authorizedUser) {
          if (!newNumOverdueGames.isEmpty()) updates.add("numOverDueGames = " + Integer.parseInt(newNumOverdueGames));
 
          if (updates.isEmpty()) {
-               System.out.println("No updates were provided.");
+               System.out.println("❌No updates were provided.");
                return;
          }
 
