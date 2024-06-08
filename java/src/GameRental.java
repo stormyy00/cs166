@@ -466,61 +466,70 @@ public class GameRental {
 
 
    public static String updateProfile(GameRental esql, String authorizedUser) {
-    try {
-        System.out.println("This updates profile");
+     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        
-        String checkUserQuery = "SELECT COUNT(*) FROM users WHERE login = ?";
-        PreparedStatement checkUserStmt = esql._connection.prepareStatement(checkUserQuery);
-        checkUserStmt.setString(1, authorizedUser);
-        ResultSet rs = checkUserStmt.executeQuery();
-        rs.next();
-        int userCount = rs.getInt(1);
-        checkUserStmt.close();
+        try {
 
-        if (userCount == 0) {
-            System.out.println("No user found with the login: " + authorizedUser);
-            return authorizedUser;
-        }
+            String query = String.format("SELECT login, password, role, favGames, phoneNum, numOverDueGames FROM USERS WHERE login = '%s'", authorizedUser);
+            List<List<String>> profile = esql.executeQueryAndReturnResult(query);
 
-        System.out.println("Enter the new login:");
-        String login = in.readLine();
-        System.out.println("Enter the new password:");
-        String password = in.readLine();
-        System.out.println("Enter the new favorite games:");
-        String favGames = in.readLine();
-        System.out.println("Enter the new phone number:");
-        String phoneNum = in.readLine();
+            if (!profile.isEmpty()) {
 
-        List<String> updates = new ArrayList<>();
-        if (!login.isEmpty()) updates.add("login = '" + login + "'");
-        if (!password.isEmpty()) updates.add("password = '" + password + "'");
-        if (!favGames.isEmpty()) updates.add("favGames = '" + favGames + "'");
-        if (!phoneNum.isEmpty()) updates.add("phoneNum = '" + phoneNum + "'");
+                System.out.println("===========================");
+                System.out.println("\tUser Profile");
+                System.out.println("===========================");
+                for (List<String> row : profile) {
+                    System.out.println("Name: " + row.get(0));
+                    System.out.println("Password: " + row.get(1));
+                    System.out.println("Role: " + row.get(2));
+                    System.out.println("Favorite Games: " + row.get(3));
+                    System.out.println("Phone Number: " + row.get(4));
+                    System.out.println("Overdue Games: " + row.get(5));
+                }
 
-        if (updates.isEmpty()) {
-            System.out.println("No updates were provided.");
-            return authorizedUser;
-        }
+                System.out.println("Would you like to update your profile? (yes/no)");
+                String response = reader.readLine();
 
-        String updateQuery = "UPDATE users SET " + String.join(", ", updates) + " WHERE login = ?";
-        PreparedStatement pstmt = esql._connection.prepareStatement(updateQuery);
-        pstmt.setString(1, authorizedUser);
+                if (response.equalsIgnoreCase("yes")) {
+                    System.out.println("What would you like to update?");
+                    System.out.println("1. Favorite Games");
+                    System.out.println("2. Phone Number");
+                    System.out.println("3. Password");
+                    String choiceStr = reader.readLine();
+                    int choice = Integer.parseInt(choiceStr);
 
-        int rowsUpdated = pstmt.executeUpdate();
-        if (rowsUpdated > 0) {
-            System.out.println("✅Profile updated successfully.");
-            if (!login.isEmpty()) {
-                authorizedUser = login;
+                    switch (choice) {
+                        case 1:
+                            System.out.println("Enter new favorite games list:");
+                            String newFavGames = reader.readLine();
+                            query = String.format("UPDATE USERS SET favGames = '%s' WHERE login = '%s'", newFavGames, authorizedUser);
+                            esql.executeUpdate(query);
+                            System.out.println("✅Favorite games updated successfully.");
+                            break;
+                        case 2:
+                            System.out.println("Enter new phone number:");
+                            String newPhoneNum = reader.readLine();
+                            query = String.format("UPDATE USERS SET phoneNum = '%s' WHERE login = '%s'", newPhoneNum, authorizedUser);
+                            esql.executeUpdate(query);
+                            System.out.println("✅Phone number updated successfully.");
+                            break;
+                        case 3:
+                            System.out.println("Enter new password:");
+                            String newPassword = reader.readLine();
+                            query = String.format("UPDATE USERS SET password = '%s' WHERE login = '%s'", newPassword, authorizedUser);
+                            esql.executeUpdate(query);
+                            System.out.println("✅Password changed successfully.");
+                            break;
+                        default:
+                            System.out.println("❌Invalid choice.");
+                    }
+                }
+            } else {
+                System.out.println("❌No user found with the login: " + authorizedUser);
             }
-        } else {
-            System.out.println("❌Profile update failed.");
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
-
-         pstmt.close();
-      } catch (Exception e) {
-         System.err.println(e.getMessage());
-      }
       return authorizedUser;
    }
 
