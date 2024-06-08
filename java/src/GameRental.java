@@ -570,7 +570,7 @@ public class GameRental {
 
          if (sortChoice.equals("ASC") || sortChoice.equals("DESC")) {
             query += String.format(" ORDER BY price %s;", sortChoice.toUpperCase()); 
-            System.out.println(query);// Specify sorting by price in the correct syntax
+            //System.out.println(query);// Specify sorting by price in the correct syntax
          } else if (!sortChoice.equals("none")) {
             System.out.println("Results will be displayed without sorting.");
          }
