@@ -1,13 +1,13 @@
-DROP INDEX IF EXISTS idx_users_phoneNum;
-DROP INDEX IF EXISTS idx_catalog_genre;
-DROP INDEX IF EXISTS idx_catalog_price;
-DROP INDEX IF EXISTS idx_rentalOrder_login;
-DROP INDEX IF EXISTS idx_trackingInfo_rentalOrderID;
-DROP INDEX IF EXISTS idx_gamesInOrder_gameID;
-
+CREATE INDEX idx_users_role ON Users(role);
 CREATE INDEX idx_users_phoneNum ON Users(phoneNum);
 CREATE INDEX idx_catalog_genre ON Catalog(genre);
 CREATE INDEX idx_catalog_price ON Catalog(price);
-CREATE INDEX idx_rentalOrder_login ON RentalOrder(login);
-CREATE INDEX idx_trackingInfo_rentalOrderID ON TrackingInfo(rentalOrderID);
-CREATE INDEX idx_gamesInOrder_gameID ON GamesInOrder(gameID);
+CREATE INDEX idx_rentalorder_login ON RentalOrder(login);
+CREATE INDEX idx_rentalorder_orderTimestamp ON RentalOrder(orderTimestamp);
+CREATE INDEX idx_rentalorder_dueDate ON RentalOrder(dueDate);
+CREATE INDEX idx_trackinginfo_rentalOrderID ON TrackingInfo(rentalOrderID);
+CREATE INDEX idx_trackinginfo_status ON TrackingInfo(status);
+CREATE INDEX idx_trackinginfo_currentLocation ON TrackingInfo(currentLocation);
+CREATE INDEX idx_trackinginfo_courierName ON TrackingInfo(courierName);
+CREATE INDEX idx_gamesinorder_rentalOrderID ON GamesInOrder(rentalOrderID);
+CREATE INDEX idx_gamesinorder_gameID ON GamesInOrder(gameID);
